@@ -2,18 +2,19 @@ package org.gui;
 
 import org.controller.ApplicationController;
 import org.gui.menu.ApplicationMenuBar;
-import org.log.Logger;
+import org.gui.window.InternalWindowManager;
 import org.gui.view.View;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
-import javax.swing.JInternalFrame;
 import javax.swing.SwingUtilities;
 
 
 public class MainApplicationFrame extends JFrame implements View {
+    private static final int FRAME_INSET = 50;
+
     private final JDesktopPane desktopPane = new JDesktopPane();
     private final ApplicationController controller;
     
@@ -21,41 +22,29 @@ public class MainApplicationFrame extends JFrame implements View {
         this.controller = controller;
         setJMenuBar(new ApplicationMenuBar(controller));
 
-        int inset = 50;
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        setBounds(inset, inset,
-            screenSize.width  - inset*2,
-            screenSize.height - inset*2);
-
+        setUpFrameBounds();
         setContentPane(desktopPane);
-
-        LogWindow logWindow = createLogWindow();
-        addWindow(logWindow);
-
-        GameWindow gameWindow = new GameWindow();
-        gameWindow.setSize(400,  400);
-        addWindow(gameWindow);
-
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        InternalWindowManager windowManager = new InternalWindowManager(desktopPane);
+        windowManager.initializeWindows();
     }
-    
-    protected LogWindow createLogWindow()
-    {
-        LogWindow logWindow = new LogWindow(Logger.getDefaultLogSource());
-        logWindow.setLocation(10,10);
-        logWindow.setSize(300, 800);
-        setMinimumSize(logWindow.getSize());
-        logWindow.pack();
-        Logger.debug("Протокол работает");
-        return logWindow;
+
+    private void setUpFrameBounds() {
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        setBounds(
+                FRAME_INSET,
+                FRAME_INSET,
+                screenSize.width  - FRAME_INSET * 2,
+                screenSize.height - FRAME_INSET * 2
+        );
     }
-    
-    protected void addWindow(JInternalFrame frame)
-    {
-        desktopPane.add(frame);
-        frame.setVisible(true);
+
+    @Override
+    public void updateUI() {
+        SwingUtilities.updateComponentTreeUI(this);
     }
-    
+
 //    protected JMenuBar createMenuBar() {
 //        JMenuBar menuBar = new JMenuBar();
 // 
@@ -85,8 +74,4 @@ public class MainApplicationFrame extends JFrame implements View {
 //        return menuBar;
 //    }
 
-    @Override
-    public void updateUI() {
-        SwingUtilities.updateComponentTreeUI(this);
-    }
 }
