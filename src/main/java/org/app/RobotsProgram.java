@@ -1,4 +1,7 @@
-package org.gui;
+package org.app;
+
+import org.controller.ApplicationController;
+import org.gui.MainApplicationFrame;
 
 import java.awt.Frame;
 
@@ -13,12 +16,14 @@ public class RobotsProgram
         UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
 //        UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
 //        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-//        UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
       } catch (Exception e) {
         e.printStackTrace();
       }
       SwingUtilities.invokeLater(() -> {
-        MainApplicationFrame frame = new MainApplicationFrame();
+        ApplicationController controller = new ApplicationController();
+        MainApplicationFrame frame = new MainApplicationFrame(controller);
+        controller.setLookAndViewUpdater(frame);
+
         frame.pack();
         frame.setVisible(true);
         frame.setExtendedState(Frame.MAXIMIZED_BOTH);
