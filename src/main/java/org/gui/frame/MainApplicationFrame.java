@@ -4,12 +4,14 @@ import org.controller.ApplicationController;
 import org.gui.menu.ApplicationMenuBar;
 import org.gui.manager.InternalWindowManager;
 import org.gui.view.View;
+import org.gui.internal.GameWindow;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import javax.swing.JInternalFrame;
 
 
 public class MainApplicationFrame extends JFrame implements View {
@@ -38,6 +40,13 @@ public class MainApplicationFrame extends JFrame implements View {
                 screenSize.width  - FRAME_INSET * 2,
                 screenSize.height - FRAME_INSET * 2
         );
+    }
+    public void shutdown() {
+        for (JInternalFrame frame : desktopPane.getAllFrames()) {
+            if (frame instanceof GameWindow) {
+                ((GameWindow) frame).getVisualizer().shutdown();
+            }
+        }
     }
 
     @Override

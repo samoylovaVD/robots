@@ -4,6 +4,7 @@ import org.controller.ApplicationController;
 import org.controller.actions.CrossplatformLookAndFeelAction;
 import org.controller.actions.LogMessageAction;
 import org.controller.actions.SystemLookAndFeelAction;
+import org.controller.actions.ExitAction;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
@@ -14,6 +15,7 @@ public class ApplicationMenuBar extends JMenuBar {
     public ApplicationMenuBar(ApplicationController controller) {
         this.controller = controller;
 
+        add(createFileMenu());
         add(createLookAndFeelMenu());
         add(createTestMenu());
     }
@@ -34,9 +36,25 @@ public class ApplicationMenuBar extends JMenuBar {
         testMenu.setMnemonic(KeyEvent.VK_T);
         testMenu.getAccessibleContext().setAccessibleDescription(
                 "Тестовые команды");
+        testMenu.add(new JMenuItem(new LogMessageAction(controller)));
 
-        testMenu.add(createAddLogMessageItem());
+        // Новый пункт для вызова JFileChooser
+        JMenuItem fileChooserItem = new JMenuItem("Открыть файл...");
+        fileChooserItem.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.showOpenDialog(null);
+        });
+        testMenu.add(fileChooserItem);
         return testMenu;
+    }
+
+    private JMenu createFileMenu(){
+        JMenu fileMenu = new JMenu("Файл");
+        fileMenu.setMnemonic(KeyEvent.VK_F);
+        fileMenu.getAccessibleContext().setAccessibleDescription(
+                "Команды управления файлом");
+        fileMenu.add(new JMenuItem(new ExitAction(controller)));
+        return fileMenu;
     }
 
     private JMenuItem createAddLogMessageItem() {

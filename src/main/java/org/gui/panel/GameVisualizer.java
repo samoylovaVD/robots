@@ -207,4 +207,7 @@ public class GameVisualizer extends JPanel
         g.setColor(Color.BLACK);
         drawOval(g, x, y, 5, 5);
     }
+    public void shutdown() {
+        m_timer.cancel();
+        m_timer.purge();}
 }

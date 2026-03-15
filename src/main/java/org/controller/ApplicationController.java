@@ -2,6 +2,8 @@ package org.controller;
 
 import org.service.Logger;
 import org.gui.view.View;
+import javax.swing.JOptionPane;
+import org.gui.frame.MainApplicationFrame;
 
 import javax.swing.*;
 
@@ -17,7 +19,8 @@ public class ApplicationController {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             view.updateUI();
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     // Сменить Look & Feel на кроссплатформенный
@@ -25,11 +28,36 @@ public class ApplicationController {
         try {
             UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
             view.updateUI();
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     // Логирование
     public void logMessage(String message) {
         Logger.debug(message);
     }
+
+    private MainApplicationFrame mainFrame;   // или JFrame mainFrame;
+
+    public void setMainFrame(MainApplicationFrame frame) {
+        this.mainFrame = frame;
+    }
+
+    public void exitApplication() {
+        if (mainFrame== null){
+            System.exit(0);
+            return;
+        }
+        int result = JOptionPane.showConfirmDialog(mainFrame,
+                "Вы действительно хотите выйти?",
+                "Выполняется выход...",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+        );
+        if (result == JOptionPane.YES_OPTION) {
+            mainFrame.shutdown();
+            mainFrame.dispose();
+        }
+    }
+
 }
