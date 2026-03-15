@@ -50,6 +50,7 @@ public class RobotsProgram
       SwingUtilities.invokeLater(() -> {
         ApplicationController controller = new ApplicationController();
         MainApplicationFrame frame = new MainApplicationFrame(controller);
+        controller.setMainFrame(frame);
         controller.setLookAndViewUpdater(frame);
 
         frame.pack();

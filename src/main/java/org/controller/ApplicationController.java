@@ -3,6 +3,7 @@ package org.controller;
 import org.service.Logger;
 import org.gui.view.View;
 import javax.swing.JOptionPane;
+import org.gui.frame.MainApplicationFrame;
 
 import javax.swing.*;
 
@@ -36,15 +37,27 @@ public class ApplicationController {
         Logger.debug(message);
     }
 
+    private MainApplicationFrame mainFrame;   // или JFrame mainFrame;
+
+    public void setMainFrame(MainApplicationFrame frame) {
+        this.mainFrame = frame;
+    }
+
     public void exitApplication() {
-        int result = JOptionPane.showConfirmDialog(null,
+        if (mainFrame== null){
+            System.exit(0);
+            return;
+        }
+        int result = JOptionPane.showConfirmDialog(mainFrame,
                 "Вы действительно хотите выйти?",
                 "Выполняется выход...",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE
         );
         if (result == JOptionPane.YES_OPTION) {
-            System.exit(0);
+            mainFrame.shutdown();
+            mainFrame.dispose();
         }
     }
+
 }
