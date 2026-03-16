@@ -6,6 +6,9 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 
 
+/**
+ * Action, переключающий внешний вид интерфейса на системную схему оформления.
+ */
 public class SystemLookAndFeelAction extends AbstractAction {
     private final ApplicationController controller;
 

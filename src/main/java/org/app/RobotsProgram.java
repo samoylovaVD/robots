@@ -17,13 +17,27 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 
+/**
+ * Главный класс приложения.
+ * Запускает Swing GUI в EDT
+ */
 public class RobotsProgram {
+    /**
+     * Точка входа в приложение.
+     * Инициализирует окружение, локализацию, создает главное окно приложения.
+     * @param args аргументы командной строки (не используются)
+     */
     public static void main(String[] args) {
         setDefaultLookAndFeel();
         localizeApp();
         SwingUtilities.invokeLater(RobotsProgram::initializeApp);
     }
 
+    /**
+     * Инициализирует главное окно приложения через DI.
+     * Создаёт контроллер, меню, внутренние окна и связывает их с MainApplicationFrame.
+     * Метод вызывается внутри EDT через SwingUtilities.invokeLater.
+     */
     private static void initializeApp() {
         ApplicationController controller = new ApplicationController();
 
@@ -34,7 +48,11 @@ public class RobotsProgram {
                 createLogWindow()
         ));
 
-        MainApplicationFrame frame = new MainApplicationFrame(menuBar, windowManager);
+        MainApplicationFrame frame = new MainApplicationFrame(
+                menuBar,
+                windowManager,
+                controller
+        );
         controller.setView(frame);
 
         frame.pack();
@@ -42,6 +60,9 @@ public class RobotsProgram {
         frame.setExtendedState(Frame.MAXIMIZED_BOTH);
     }
 
+    /**
+     * Устанавливает дефолтные настройки для внешнего вида окон приложения
+     */
     private static void setDefaultLookAndFeel() {
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
@@ -50,6 +71,9 @@ public class RobotsProgram {
         }
     }
 
+    /**
+     * Настраивает локализацию для приложения
+     */
     private static void localizeApp() {
 
         Locale.setDefault(Locale.of("ru"));
@@ -78,6 +102,10 @@ public class RobotsProgram {
         UIManager.put("FileChooser.detailsViewButtonToolTipText", "Таблица");
     }
 
+    /**
+     * Создает и настраивает окно логов {@link LogWindow}
+     * @return новый экземпляр {@link LogWindow}
+     */
     private static LogWindow createLogWindow() {
         LogWindow logWindow = new LogWindow(Logger.getDefaultLogSource());
         logWindow.setLocation(10, 10);
@@ -87,6 +115,10 @@ public class RobotsProgram {
         return logWindow;
     }
 
+    /**
+     * Создает и настраивает окно игры {@link GameWindow}
+     * @return новый экземпляр {@link GameWindow}
+     */
     private static GameWindow createGameWindow() {
         GameWindow gameWindow = new GameWindow();
         gameWindow.setSize(400, 400);

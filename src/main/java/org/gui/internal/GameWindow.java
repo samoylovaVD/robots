@@ -1,10 +1,9 @@
 package org.gui.internal;
 
-import org.controller.Shutdownable;
+import org.gui.view.Shutdownable;
 import org.gui.panel.GameVisualizer;
 
 import java.awt.BorderLayout;
-import java.awt.event.ActionListener;
 
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
