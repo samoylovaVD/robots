@@ -1,35 +1,29 @@
 package org.gui.frame;
 
-import org.controller.ApplicationController;
 import org.gui.menu.ApplicationMenuBar;
 import org.gui.manager.InternalWindowManager;
 import org.gui.view.View;
-import org.gui.internal.GameWindow;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import javax.swing.JDesktopPane;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
-import javax.swing.JInternalFrame;
+import javax.swing.*;
 
 
 public class MainApplicationFrame extends JFrame implements View {
     private static final int FRAME_INSET = 50;
 
-    private final JDesktopPane desktopPane = new JDesktopPane();
+    private final InternalWindowManager windowManager;
 
     public MainApplicationFrame(
-            ApplicationMenuBar menuBar
+            ApplicationMenuBar menuBar,
+            InternalWindowManager windowManager
     ) {
+        this.windowManager = windowManager;
+
         setJMenuBar(menuBar);
-
         setUpFrameBounds();
-        setContentPane(desktopPane);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-
-        InternalWindowManager windowManager = new InternalWindowManager(desktopPane);
-        windowManager.initializeWindows();
+        setContentPane(windowManager.getDesktopPane());
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     }
 
     private void setUpFrameBounds() {
@@ -43,15 +37,24 @@ public class MainApplicationFrame extends JFrame implements View {
     }
 
     public void shutdown() {
-        for (JInternalFrame frame : desktopPane.getAllFrames()) {
-            if (frame instanceof GameWindow) {
-                ((GameWindow) frame).getVisualizer().shutdown();
-            }
-        }
+        windowManager.shutdownWindows();
+        dispose();
     }
 
     @Override
     public void updateUI() {
         SwingUtilities.updateComponentTreeUI(this);
+    }
+
+    @Override
+    public boolean confirmExit() {
+        int result = JOptionPane.showConfirmDialog(
+                this,
+                "Вы действительно хотите выйти?",
+                "Выполняется выход...",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+        );
+        return result == JOptionPane.YES_OPTION;
     }
 }

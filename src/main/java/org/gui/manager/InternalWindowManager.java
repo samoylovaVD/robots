@@ -1,22 +1,17 @@
 package org.gui.manager;
 
-import org.gui.internal.GameWindow;
-import org.gui.internal.LogWindow;
-import org.service.Logger;
+import org.controller.Shutdownable;
 
 import javax.swing.*;
 import java.awt.*;
 
+import java.util.List;
+
 public class InternalWindowManager {
-    private final JDesktopPane desktopPane;
+    private final JDesktopPane desktopPane = new JDesktopPane();
 
-    public InternalWindowManager(JDesktopPane desktopPane) {
-        this.desktopPane = desktopPane;
-    }
-
-    public void initializeWindows() {
-        addWindow(createGameWindow());
-        addWindow(createLogWindow());
+    public InternalWindowManager(List<JInternalFrame> frames) {
+        for (JInternalFrame frame: frames) addWindow(frame);
     }
 
     public void addWindow(JInternalFrame frame) {
@@ -24,18 +19,15 @@ public class InternalWindowManager {
         frame.setVisible(true);
     }
 
-    private LogWindow createLogWindow() {
-        LogWindow logWindow = new LogWindow(Logger.getDefaultLogSource());
-        logWindow.setLocation(10, 10);
-        logWindow.setPreferredSize(new Dimension(300, 800));
-        logWindow.pack();
-        Logger.debug("Протокол работает");
-        return logWindow;
+
+    public void shutdownWindows() {
+        for (JInternalFrame frame : desktopPane.getAllFrames()) {
+            if (frame instanceof Shutdownable f) f.shutdown();
+            frame.dispose();
+        }
     }
 
-    private GameWindow createGameWindow() {
-        GameWindow gameWindow = new GameWindow();
-        gameWindow.setSize(400, 400);
-        return gameWindow;
+    public JDesktopPane getDesktopPane() {
+        return desktopPane;
     }
 }

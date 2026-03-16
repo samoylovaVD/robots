@@ -2,10 +2,15 @@ package org.app;
 
 import org.controller.ApplicationController;
 import org.gui.frame.MainApplicationFrame;
+import org.gui.internal.GameWindow;
+import org.gui.internal.LogWindow;
+import org.gui.manager.InternalWindowManager;
 import org.gui.menu.ApplicationMenuBar;
 import org.gui.menu.MenuManager;
+import org.service.Logger;
 
-import java.awt.Frame;
+import java.awt.*;
+import java.util.List;
 import java.util.Locale;
 
 import javax.swing.SwingUtilities;
@@ -14,32 +19,35 @@ import javax.swing.UIManager;
 
 public class RobotsProgram {
     public static void main(String[] args) {
-
-        try {
-            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-//        UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
-//        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        setDefaultLookAndFeel();
         localizeApp();
         SwingUtilities.invokeLater(RobotsProgram::initializeApp);
-
     }
+
     private static void initializeApp() {
         ApplicationController controller = new ApplicationController();
 
         MenuManager menuManager = new MenuManager(controller);
         ApplicationMenuBar menuBar = new ApplicationMenuBar(menuManager);
+        InternalWindowManager windowManager = new InternalWindowManager(List.of(
+                createGameWindow(),
+                createLogWindow()
+        ));
 
-        MainApplicationFrame frame = new MainApplicationFrame(menuBar);
-        controller.setMainFrame(frame);
-        controller.setLookAndViewUpdater(frame);
+        MainApplicationFrame frame = new MainApplicationFrame(menuBar, windowManager);
+        controller.setView(frame);
 
         frame.pack();
         frame.setVisible(true);
         frame.setExtendedState(Frame.MAXIMIZED_BOTH);
+    }
+
+    private static void setDefaultLookAndFeel() {
+        try {
+            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+        } catch (Exception e) {
+            System.err.println("Couldn't set default look and feel");
+        }
     }
 
     private static void localizeApp() {
@@ -70,4 +78,18 @@ public class RobotsProgram {
         UIManager.put("FileChooser.detailsViewButtonToolTipText", "Таблица");
     }
 
+    private static LogWindow createLogWindow() {
+        LogWindow logWindow = new LogWindow(Logger.getDefaultLogSource());
+        logWindow.setLocation(10, 10);
+        logWindow.setPreferredSize(new Dimension(300, 800));
+        logWindow.pack();
+        Logger.debug("Протокол работает");
+        return logWindow;
+    }
+
+    private static GameWindow createGameWindow() {
+        GameWindow gameWindow = new GameWindow();
+        gameWindow.setSize(400, 400);
+        return gameWindow;
+    }
 }

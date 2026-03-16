@@ -13,7 +13,7 @@ public class ExitAction extends AbstractAction {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e){
-        controller.exitApplication();
+    public void actionPerformed(ActionEvent e) {
+        controller.requestExit();
     }
 }

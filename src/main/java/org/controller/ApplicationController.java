@@ -2,16 +2,20 @@ package org.controller;
 
 import org.service.Logger;
 import org.gui.view.View;
-import javax.swing.JOptionPane;
-import org.gui.frame.MainApplicationFrame;
 
 import javax.swing.*;
 
 public class ApplicationController {
     private View view;
 
-    public void setLookAndViewUpdater(View view) {
+    public void setView(View view) {
         this.view = view;
+    }
+
+    public void requestExit() {
+        if (view.confirmExit()) {
+            view.shutdown();
+        }
     }
 
     // Сменить Look & Feel на системный
@@ -32,32 +36,7 @@ public class ApplicationController {
         }
     }
 
-    // Логирование
     public void logMessage(String message) {
         Logger.debug(message);
     }
-
-    private MainApplicationFrame mainFrame;   // или JFrame mainFrame;
-
-    public void setMainFrame(MainApplicationFrame frame) {
-        this.mainFrame = frame;
-    }
-
-    public void exitApplication() {
-        if (mainFrame== null){
-            System.exit(0);
-            return;
-        }
-        int result = JOptionPane.showConfirmDialog(mainFrame,
-                "Вы действительно хотите выйти?",
-                "Выполняется выход...",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE
-        );
-        if (result == JOptionPane.YES_OPTION) {
-            mainFrame.shutdown();
-            mainFrame.dispose();
-        }
-    }
-
 }
