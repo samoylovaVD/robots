@@ -2,19 +2,39 @@ package org.controller;
 
 import org.service.Logger;
 import org.gui.view.View;
-import javax.swing.JOptionPane;
-import org.gui.frame.MainApplicationFrame;
 
 import javax.swing.*;
 
+/**
+ * Главный контроллер приложения.
+ * Реагирует на {@link Action} и дает пользователю фидбек на его действия.
+ */
 public class ApplicationController {
     private View view;
 
-    public void setLookAndViewUpdater(View view) {
+    /**
+     * Сеттер для {@link View}
+     * @param view экземпляр {@link View}, через который контроллер будет управлять отображением
+     */
+    public void setView(View view) {
         this.view = view;
     }
 
-    // Сменить Look & Feel на системный
+    /**
+     * Инициирует выход из приложения.
+     * Вызывает {@link View#confirmExit()} для запроса подтверждения у пользователя.
+     * Если пользователь согласен, вызывает {@link View#shutdown()} для корректного закрытия всех окон.
+     */
+    public void requestExit() {
+        if (view.confirmExit()) {
+            view.shutdown();
+        }
+    }
+
+    /**
+     * Меняет Look & Feel на системный.
+     * После смены вызывает {@link View#updateUI()} для обновления интерфейса.
+     */
     public void setSystemLookAndFeel() {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -23,7 +43,10 @@ public class ApplicationController {
         }
     }
 
-    // Сменить Look & Feel на кроссплатформенный
+    /**
+     * Меняет Look & Feel на кроссплатформенный.
+     * После смены вызывает {@link View#updateUI()} для обновления интерфейса.
+     */
     public void setCrossPlatformLookAndFeel() {
         try {
             UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
@@ -32,32 +55,11 @@ public class ApplicationController {
         }
     }
 
-    // Логирование
+    /**
+     * Логирует переданное сообщение через {@link Logger}.
+     * @param message текст сообщения для логирования
+     */
     public void logMessage(String message) {
         Logger.debug(message);
     }
-
-    private MainApplicationFrame mainFrame;   // или JFrame mainFrame;
-
-    public void setMainFrame(MainApplicationFrame frame) {
-        this.mainFrame = frame;
-    }
-
-    public void exitApplication() {
-        if (mainFrame== null){
-            System.exit(0);
-            return;
-        }
-        int result = JOptionPane.showConfirmDialog(mainFrame,
-                "Вы действительно хотите выйти?",
-                "Выполняется выход...",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE
-        );
-        if (result == JOptionPane.YES_OPTION) {
-            mainFrame.shutdown();
-            mainFrame.dispose();
-        }
-    }
-
 }

@@ -1,37 +1,66 @@
 package org.gui.frame;
 
 import org.controller.ApplicationController;
+import org.controller.actions.ExitAction;
 import org.gui.menu.ApplicationMenuBar;
 import org.gui.manager.InternalWindowManager;
 import org.gui.view.View;
-import org.gui.internal.GameWindow;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import javax.swing.JDesktopPane;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
-import javax.swing.JInternalFrame;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import javax.swing.*;
 
 
+/**
+ * Главное окно приложения.
+ * Является тонкой GUI-прослойкой и реализует интерфейс {@link View} в архитектуре MVC.
+ * Отвечает за отображение {@link InternalWindowManager}, меню и обработку закрытия окна.
+ */
 public class MainApplicationFrame extends JFrame implements View {
     private static final int FRAME_INSET = 50;
 
-    private final JDesktopPane desktopPane = new JDesktopPane();
+    private final InternalWindowManager windowManager;
     private final ApplicationController controller;
-    
-    public MainApplicationFrame(ApplicationController controller) {
+
+    private final ExitAction exitAction;
+
+    /**
+     * Создает главное окно приложения
+     * @param menuBar панель меню приложения
+     * @param windowManager менеджер внутренних окон
+     * @param controller контроллер приложения, через который выполняются действия
+     */
+    public MainApplicationFrame(
+            ApplicationMenuBar menuBar,
+            InternalWindowManager windowManager,
+            ApplicationController controller
+    ) {
+        this.windowManager = windowManager;
         this.controller = controller;
-        setJMenuBar(new ApplicationMenuBar(controller));
 
+        exitAction = new ExitAction(controller);
+
+        // Устанавливаем главную панель меню
+        setJMenuBar(menuBar);
+        // Задаем размеры
         setUpFrameBounds();
-        setContentPane(desktopPane);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setContentPane(windowManager.getDesktopPane());
+        // Здесь мы хотим предотвратить поведение по умолчанию при нажатии "крестика" в углу GUI и поставить свой кастомный обработчик
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
-        InternalWindowManager windowManager = new InternalWindowManager(desktopPane);
-        windowManager.initializeWindows();
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                exitAction.actionPerformed(null);
+            }
+        });
     }
 
+    /**
+     * Устанавливает размеры окна.
+     * Размер задается с учетом отступа {@link #FRAME_INSET} от краев экрана
+     */
     private void setUpFrameBounds() {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setBounds(
@@ -41,46 +70,37 @@ public class MainApplicationFrame extends JFrame implements View {
                 screenSize.height - FRAME_INSET * 2
         );
     }
+
+    /**
+     * Закрывает главное окно и внутренние окна
+     */
+    @Override
     public void shutdown() {
-        for (JInternalFrame frame : desktopPane.getAllFrames()) {
-            if (frame instanceof GameWindow) {
-                ((GameWindow) frame).getVisualizer().shutdown();
-            }
-        }
+        windowManager.shutdownWindows();
+        dispose();
     }
 
+    /**
+     * Рекурсивно перерисовывает UI
+     */
     @Override
     public void updateUI() {
         SwingUtilities.updateComponentTreeUI(this);
     }
 
-//    protected JMenuBar createMenuBar() {
-//        JMenuBar menuBar = new JMenuBar();
-// 
-//        //Set up the lone menu.
-//        JMenu menu = new JMenu("Document");
-//        menu.setMnemonic(KeyEvent.VK_D);
-//        menuBar.add(menu);
-// 
-//        //Set up the first menu item.
-//        JMenuItem menuItem = new JMenuItem("New");
-//        menuItem.setMnemonic(KeyEvent.VK_N);
-//        menuItem.setAccelerator(KeyStroke.getKeyStroke(
-//                KeyEvent.VK_N, ActionEvent.ALT_MASK));
-//        menuItem.setActionCommand("new");
-////        menuItem.addActionListener(this);
-//        menu.add(menuItem);
-// 
-//        //Set up the second menu item.
-//        menuItem = new JMenuItem("Quit");
-//        menuItem.setMnemonic(KeyEvent.VK_Q);
-//        menuItem.setAccelerator(KeyStroke.getKeyStroke(
-//                KeyEvent.VK_Q, ActionEvent.ALT_MASK));
-//        menuItem.setActionCommand("quit");
-////        menuItem.addActionListener(this);
-//        menu.add(menuItem);
-// 
-//        return menuBar;
-//    }
-
+    /**
+     * Отображает диалог подтверждения выхода
+     * @return  {@code true}, если пользователь подтвердил выход (нажал «Да»), иначе {@code false}
+     */
+    @Override
+    public boolean confirmExit() {
+        int result = JOptionPane.showConfirmDialog(
+                this,
+                "Вы действительно хотите выйти?",
+                "Выполняется выход...",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+        );
+        return result == JOptionPane.YES_OPTION;
+    }
 }

@@ -2,27 +2,81 @@ package org.app;
 
 import org.controller.ApplicationController;
 import org.gui.frame.MainApplicationFrame;
+import org.gui.internal.GameWindow;
+import org.gui.internal.LogWindow;
+import org.gui.manager.InternalWindowManager;
+import org.gui.menu.ApplicationMenuBar;
+import org.gui.menu.MenuManager;
+import org.service.Logger;
 
-import java.awt.Frame;
+import java.awt.*;
+import java.util.List;
 import java.util.Locale;
 
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
-import javax.swing.UIDefaults;
-import java.util.Enumeration;
 
-public class RobotsProgram
-{
+/**
+ * Главный класс приложения.
+ * Запускает Swing GUI в EDT
+ */
+public class RobotsProgram {
+    /**
+     * Точка входа в приложение.
+     * Инициализирует окружение, локализацию, создает главное окно приложения.
+     * @param args аргументы командной строки (не используются)
+     */
     public static void main(String[] args) {
-      try {
-        UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-//        UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
-//        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-      Locale.setDefault(Locale.of("ru"));
+        setDefaultLookAndFeel();
+        localizeApp();
+        SwingUtilities.invokeLater(RobotsProgram::initializeApp);
+    }
+
+    /**
+     * Инициализирует главное окно приложения через DI.
+     * Создаёт контроллер, меню, внутренние окна и связывает их с MainApplicationFrame.
+     * Метод вызывается внутри EDT через SwingUtilities.invokeLater.
+     */
+    private static void initializeApp() {
+        ApplicationController controller = new ApplicationController();
+
+        MenuManager menuManager = new MenuManager(controller);
+        ApplicationMenuBar menuBar = new ApplicationMenuBar(menuManager);
+        InternalWindowManager windowManager = new InternalWindowManager(List.of(
+                createGameWindow(),
+                createLogWindow()
+        ));
+
+        MainApplicationFrame frame = new MainApplicationFrame(
+                menuBar,
+                windowManager,
+                controller
+        );
+        controller.setView(frame);
+
+        frame.pack();
+        frame.setVisible(true);
+        frame.setExtendedState(Frame.MAXIMIZED_BOTH);
+    }
+
+    /**
+     * Устанавливает дефолтные настройки для внешнего вида окон приложения
+     */
+    private static void setDefaultLookAndFeel() {
+        try {
+            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+        } catch (Exception e) {
+            System.err.println("Couldn't set default look and feel");
+        }
+    }
+
+    /**
+     * Настраивает локализацию для приложения
+     */
+    private static void localizeApp() {
+
+        Locale.setDefault(Locale.of("ru"));
 
         UIManager.put("OptionPane.yesButtonText", "Да");
         UIManager.put("OptionPane.noButtonText", "Нет");
@@ -46,16 +100,28 @@ public class RobotsProgram
         UIManager.put("FileChooser.newFolderToolTipText", "Создать папку");
         UIManager.put("FileChooser.listViewButtonToolTipText", "Список");
         UIManager.put("FileChooser.detailsViewButtonToolTipText", "Таблица");
+    }
 
-      SwingUtilities.invokeLater(() -> {
-        ApplicationController controller = new ApplicationController();
-        MainApplicationFrame frame = new MainApplicationFrame(controller);
-        controller.setMainFrame(frame);
-        controller.setLookAndViewUpdater(frame);
+    /**
+     * Создает и настраивает окно логов {@link LogWindow}
+     * @return новый экземпляр {@link LogWindow}
+     */
+    private static LogWindow createLogWindow() {
+        LogWindow logWindow = new LogWindow(Logger.getDefaultLogSource());
+        logWindow.setLocation(10, 10);
+        logWindow.setPreferredSize(new Dimension(300, 800));
+        logWindow.pack();
+        Logger.debug("Протокол работает");
+        return logWindow;
+    }
 
-        frame.pack();
-        frame.setVisible(true);
-        frame.setExtendedState(Frame.MAXIMIZED_BOTH);
-      });
-
-    }}
+    /**
+     * Создает и настраивает окно игры {@link GameWindow}
+     * @return новый экземпляр {@link GameWindow}
+     */
+    private static GameWindow createGameWindow() {
+        GameWindow gameWindow = new GameWindow();
+        gameWindow.setSize(400, 400);
+        return gameWindow;
+    }
+}

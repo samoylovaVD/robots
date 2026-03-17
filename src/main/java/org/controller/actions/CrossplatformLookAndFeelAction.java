@@ -6,6 +6,9 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 
 
+/**
+ * Action, переключающий внешний вид интерфейса на кроссплатформенную схему оформления.
+ */
 public class CrossplatformLookAndFeelAction extends AbstractAction {
     private final ApplicationController controller;
 

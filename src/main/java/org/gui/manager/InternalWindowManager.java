@@ -1,41 +1,52 @@
 package org.gui.manager;
 
-import org.gui.internal.GameWindow;
-import org.gui.internal.LogWindow;
-import org.service.Logger;
+import org.gui.view.Shutdownable;
 
 import javax.swing.*;
-import java.awt.*;
 
+import java.util.List;
+
+/**
+ * Менеджер внутренних окон.
+ * Отвечает за создание, хранение и управление {@link JInternalFrame} внутри {@link JDesktopPane}.
+ * Поддерживает корректное завершение работы окон через интерфейс {@link Shutdownable}.
+ */
 public class InternalWindowManager {
-    private final JDesktopPane desktopPane;
+    private final JDesktopPane desktopPane = new JDesktopPane();
 
-    public InternalWindowManager(JDesktopPane desktopPane) {
-        this.desktopPane = desktopPane;
+    /**
+     * Создаёт InternalWindowManager и добавляет переданные внутренние окна.
+     * @param frames список внутренних окон ({@link JInternalFrame}), которые нужно добавить.
+     */
+    public InternalWindowManager(List<JInternalFrame> frames) {
+        for (JInternalFrame frame: frames) addWindow(frame);
     }
 
-    public void initializeWindows() {
-        addWindow(createGameWindow());
-        addWindow(createLogWindow());
-    }
-
+    /**
+     * Добавляет внутреннее окно в {@link JDesktopPane} и делает его видимым.
+     * @param frame внутренне окно ({@link JInternalFrame}) для добавления.
+     */
     public void addWindow(JInternalFrame frame) {
         desktopPane.add(frame);
         frame.setVisible(true);
     }
 
-    private LogWindow createLogWindow() {
-        LogWindow logWindow = new LogWindow(Logger.getDefaultLogSource());
-        logWindow.setLocation(10, 10);
-        logWindow.setPreferredSize(new Dimension(300, 800));
-        logWindow.pack();
-        Logger.debug("Протокол работает");
-        return logWindow;
+    /**
+     * Закрывает все внутренние окна.
+     * Если у компонента реализован интерфейс {@link Shutdownable}, то запуск идет рекурсивно.
+     */
+    public void shutdownWindows() {
+        for (JInternalFrame frame : desktopPane.getAllFrames()) {
+            if (frame instanceof Shutdownable f) f.shutdown();
+            frame.dispose();
+        }
     }
 
-    private GameWindow createGameWindow() {
-        GameWindow gameWindow = new GameWindow();
-        gameWindow.setSize(400, 400);
-        return gameWindow;
+    /**
+     * Возвращает {@link JDesktopPane}, который хранит внутренние окна.
+     * @return панель рабочего стола ({@link JDesktopPane}) с внутренними окнами
+     */
+    public JDesktopPane getDesktopPane() {
+        return desktopPane;
     }
 }

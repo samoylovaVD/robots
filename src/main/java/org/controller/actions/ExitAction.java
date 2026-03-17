@@ -4,6 +4,9 @@ import org.controller.ApplicationController;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 
+/**
+ * Action, инициирующий закрытие приложения
+ */
 public class ExitAction extends AbstractAction {
     private final ApplicationController controller;
 
@@ -13,7 +16,7 @@ public class ExitAction extends AbstractAction {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e){
-        controller.exitApplication();
+    public void actionPerformed(ActionEvent e) {
+        controller.requestExit();
     }
 }
