@@ -1,6 +1,7 @@
 package org.gui.manager;
 
 import org.gui.view.Shutdownable;
+import org.service.state.WindowStateService;
 
 import javax.swing.*;
 
@@ -13,12 +14,14 @@ import java.util.List;
  */
 public class InternalWindowManager {
     private final JDesktopPane desktopPane = new JDesktopPane();
+    private final WindowStateService stateService;
 
     /**
      * Создаёт InternalWindowManager и добавляет переданные внутренние окна.
      * @param frames список внутренних окон ({@link JInternalFrame}), которые нужно добавить.
      */
-    public InternalWindowManager(List<JInternalFrame> frames) {
+    public InternalWindowManager(List<JInternalFrame> frames, WindowStateService stateService) {
+        this.stateService = stateService;
         for (JInternalFrame frame: frames) addWindow(frame);
     }
 
@@ -40,6 +43,23 @@ public class InternalWindowManager {
             if (frame instanceof Shutdownable f) f.shutdown();
             frame.dispose();
         }
+    }
+
+    /**
+     * Сохраняет состояние внутренних окон при помощи отдельного сервиса {@link WindowStateService}.
+     * Под состоянием подразумевается x-координата, y-координата, длина, высота и свернуто ли окно.
+     */
+    public void saveState() {
+        stateService.save(desktopPane);
+    }
+
+    /**
+     * Возвращает состояние открытых внутренних окон с последней сессии
+     * при помощи отдельного сервиса {@link WindowStateService}.
+     * Под состоянием подразумевается x-координата, y-координата, длина, высота и свернуто ли окно.
+     */
+    public void restoreState() {
+        stateService.restore(desktopPane);
     }
 
     /**

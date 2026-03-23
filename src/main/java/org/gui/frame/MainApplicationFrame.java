@@ -76,6 +76,7 @@ public class MainApplicationFrame extends JFrame implements View {
      */
     @Override
     public void shutdown() {
+        windowManager.saveState();
         windowManager.shutdownWindows();
         dispose();
     }
