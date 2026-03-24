@@ -8,6 +8,7 @@ import org.gui.manager.InternalWindowManager;
 import org.gui.menu.ApplicationMenuBar;
 import org.gui.menu.MenuManager;
 import org.service.Logger;
+import org.service.state.PreferencesWindowStateService;
 
 import java.awt.*;
 import java.util.List;
@@ -34,19 +35,23 @@ public class RobotsProgram {
     }
 
     /**
-     * Инициализирует главное окно приложения через DI.
+     * Инициализирует главное окно приложения через DI. Выполняет роль composition root.
      * Создаёт контроллер, меню, внутренние окна и связывает их с MainApplicationFrame.
      * Метод вызывается внутри EDT через SwingUtilities.invokeLater.
      */
     private static void initializeApp() {
         ApplicationController controller = new ApplicationController();
+        PreferencesWindowStateService stateService = new PreferencesWindowStateService();
 
         MenuManager menuManager = new MenuManager(controller);
         ApplicationMenuBar menuBar = new ApplicationMenuBar(menuManager);
-        InternalWindowManager windowManager = new InternalWindowManager(List.of(
-                createGameWindow(),
-                createLogWindow()
-        ));
+        InternalWindowManager windowManager = new InternalWindowManager(
+                List.of(
+                    createGameWindow(),
+                    createLogWindow()
+                ),
+                stateService
+        );
 
         MainApplicationFrame frame = new MainApplicationFrame(
                 menuBar,
@@ -58,6 +63,9 @@ public class RobotsProgram {
         frame.pack();
         frame.setVisible(true);
         frame.setExtendedState(Frame.MAXIMIZED_BOTH);
+
+        // возвращаем состояние окон с последней сессии.
+        windowManager.restoreState();
     }
 
     /**
@@ -108,10 +116,14 @@ public class RobotsProgram {
      */
     private static LogWindow createLogWindow() {
         LogWindow logWindow = new LogWindow(Logger.getDefaultLogSource());
+        logWindow.setName("logWindow");
+        // Значения по умолчанию
         logWindow.setLocation(10, 10);
-        logWindow.setPreferredSize(new Dimension(300, 800));
+        logWindow.setPreferredSize(new Dimension(300, 200));
         logWindow.pack();
+
         Logger.debug("Протокол работает");
+
         return logWindow;
     }
 
@@ -121,6 +133,8 @@ public class RobotsProgram {
      */
     private static GameWindow createGameWindow() {
         GameWindow gameWindow = new GameWindow();
+        gameWindow.setName("gameWindow");
+        // Значение по умолчанию
         gameWindow.setSize(400, 400);
         return gameWindow;
     }
