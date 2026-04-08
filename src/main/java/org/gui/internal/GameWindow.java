@@ -2,6 +2,7 @@ package org.gui.internal;
 
 import org.gui.view.Shutdownable;
 import org.gui.panel.GameVisualizer;
+import org.model.RobotCoordinates;
 
 import java.awt.BorderLayout;
 
@@ -22,9 +23,13 @@ public class GameWindow extends JInternalFrame implements Shutdownable {
     public GameVisualizer getVisualizer() {
         return m_visualizer;
     }
+    public void setRobotCoordinates(RobotCoordinates robotCoordinates) {
+        m_visualizer.setRobotCoordinates(robotCoordinates);
+    }
 
     @Override
     public void shutdown() {
         m_visualizer.shutdown();
+        super.dispose();
     }
 }

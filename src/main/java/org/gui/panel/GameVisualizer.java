@@ -1,5 +1,9 @@
 package org.gui.panel;
 
+import org.model.RobotCoordinates;
+import org.model.RobotModel;
+import org.observer.ModelListener;
+
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Graphics;
@@ -13,6 +17,11 @@ import java.util.TimerTask;
 
 import javax.swing.JPanel;
 
+/**
+ * Визуализатор игрового поля.
+ * Отвечает ТОЛЬКО за отрисовку робота и цели.
+ * Получает данные из модели RobotModel.
+ */
 public class GameVisualizer extends JPanel
 {
     private final Timer m_timer = initTimer();
@@ -32,7 +41,9 @@ public class GameVisualizer extends JPanel
     
     private static final double maxVelocity = 0.1; 
     private static final double maxAngularVelocity = 0.001; 
-    
+
+    private RobotCoordinates robotCoordinates;
+
     public GameVisualizer() 
     {
         m_timer.schedule(new TimerTask()
@@ -61,6 +72,13 @@ public class GameVisualizer extends JPanel
             }
         });
         setDoubleBuffered(true);
+    }
+
+    /**
+     * Устанавливает модель координат для передачи обновлений
+     */
+    public void setRobotCoordinates(RobotCoordinates robotCoordinates) {
+        this.robotCoordinates = robotCoordinates;
     }
 
     protected void setTargetPosition(Point p)
@@ -99,16 +117,15 @@ public class GameVisualizer extends JPanel
         }
         double velocity = maxVelocity;
         double angleToTarget = angleTo(m_robotPositionX, m_robotPositionY, m_targetPositionX, m_targetPositionY);
-        double angularVelocity = 0;
-        if (angleToTarget > m_robotDirection)
-        {
-            angularVelocity = maxAngularVelocity;
+
+        double angleDiff = angleToTarget - m_robotDirection;
+        while (angleDiff > Math.PI) angleDiff -= 2* Math.PI;
+        while (angleDiff < -Math.PI) angleDiff += 2* Math.PI;
+
+        double angularVelocity=0;
+        if (Math.abs(angleDiff) > 0.01) {
+            angularVelocity = (angleDiff > 0) ? maxAngularVelocity : -maxAngularVelocity;
         }
-        if (angleToTarget < m_robotDirection)
-        {
-            angularVelocity = -maxAngularVelocity;
-        }
-        
         moveRobot(velocity, angularVelocity, 10);
     }
     
@@ -143,6 +160,10 @@ public class GameVisualizer extends JPanel
         m_robotPositionY = newY;
         double newDirection = asNormalizedRadians(m_robotDirection + angularVelocity * duration); 
         m_robotDirection = newDirection;
+
+        if (robotCoordinates != null){
+            robotCoordinates.updateCoordinates(m_robotPositionX, m_robotPositionY, m_robotDirection);
+        }
     }
 
     private static double asNormalizedRadians(double angle)

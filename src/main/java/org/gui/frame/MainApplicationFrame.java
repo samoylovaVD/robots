@@ -2,9 +2,12 @@ package org.gui.frame;
 
 import org.controller.ApplicationController;
 import org.controller.actions.ExitAction;
+import org.gui.internal.CoordinatesWindow;
+import org.gui.internal.GameWindow;
 import org.gui.menu.ApplicationMenuBar;
 import org.gui.manager.InternalWindowManager;
 import org.gui.view.View;
+import org.model.RobotCoordinates;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -23,7 +26,7 @@ public class MainApplicationFrame extends JFrame implements View {
 
     private final InternalWindowManager windowManager;
     private final ApplicationController controller;
-
+    private final RobotCoordinates robotCoordinates;
     private final ExitAction exitAction;
 
     /**
@@ -42,11 +45,21 @@ public class MainApplicationFrame extends JFrame implements View {
 
         exitAction = new ExitAction(controller);
 
+        // Создаем модель координат
+        robotCoordinates = new RobotCoordinates();
+
         // Устанавливаем главную панель меню
         setJMenuBar(menuBar);
         // Задаем размеры
         setUpFrameBounds();
         setContentPane(windowManager.getDesktopPane());
+
+        // Добавляем окно координат
+        addCoordinatesWindow();
+
+        // Подключаем модель координат к игровому окну
+        connectRobotCoordinatesToGameWindow();
+
         // Здесь мы хотим предотвратить поведение по умолчанию при нажатии "крестика" в углу GUI и поставить свой кастомный обработчик
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
@@ -56,7 +69,27 @@ public class MainApplicationFrame extends JFrame implements View {
             }
         });
     }
+    /**
+     * Добавляет окно координат в desktop pane
+     */
+    private void addCoordinatesWindow() {
+        CoordinatesWindow coordinatesWindow = new CoordinatesWindow(robotCoordinates);
+        windowManager.addWindow(coordinatesWindow);
+    }
 
+    /**
+     * Находит игровое окно и связывает его с моделью координат
+     */
+    private void connectRobotCoordinatesToGameWindow(){
+        JDesktopPane desktopPane = windowManager.getDesktopPane();
+        for (JInternalFrame frame : desktopPane.getAllFrames()){
+            if (frame instanceof GameWindow){
+                GameWindow gameWindow = (GameWindow) frame;
+                gameWindow.setRobotCoordinates(robotCoordinates);
+                break;
+            }
+        }
+    }
     /**
      * Устанавливает размеры окна.
      * Размер задается с учетом отступа {@link #FRAME_INSET} от краев экрана
@@ -104,4 +137,5 @@ public class MainApplicationFrame extends JFrame implements View {
         );
         return result == JOptionPane.YES_OPTION;
     }
+
 }
