@@ -6,6 +6,9 @@ build/
 .kotlin
 .idea/
 .gradle/
+gradle-wrapper.jar
+.vscode/
+*.class
 ### IntelliJ IDEA ###
 .idea_backup/
 .idea/modules.xml
