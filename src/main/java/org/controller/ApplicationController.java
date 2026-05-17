@@ -39,7 +39,8 @@ public class ApplicationController {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             view.updateUI();
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            Logger.error("Failed to set system look and feel: " + e.getMessage());
         }
     }
 

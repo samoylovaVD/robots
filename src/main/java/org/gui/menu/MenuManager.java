@@ -67,7 +67,7 @@ public class MenuManager {
                     KeyEvent.VK_T,
                     "Тестовые команды")
                 .item(new LogMessageAction(controller))
-                .item(new OpenFileAction(controller))
+                .item(new OpenFileAction())
                 .build();
     }
 

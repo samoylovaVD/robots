@@ -1,3 +1,5 @@
+// устанавливает общий вид, локализацию, запускает инициализацию в потоке обработки событий
+
 package org.app;
 
 import org.controller.ApplicationController;
@@ -9,6 +11,7 @@ import org.gui.menu.ApplicationMenuBar;
 import org.gui.menu.MenuManager;
 import org.service.Logger;
 import org.service.state.PreferencesWindowStateService;
+import org.model.RobotModel;
 
 import java.awt.*;
 import java.util.List;
@@ -17,42 +20,33 @@ import java.util.Locale;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
-
-/**
- * Главный класс приложения.
- * Запускает Swing GUI в EDT
- */
 public class RobotsProgram {
-    /**
-     * Точка входа в приложение.
-     * Инициализирует окружение, локализацию, создает главное окно приложения.
-     * @param args аргументы командной строки (не используются)
-     */
     public static void main(String[] args) {
         setDefaultLookAndFeel();
         localizeApp();
         SwingUtilities.invokeLater(RobotsProgram::initializeApp);
     }
 
-    /**
-     * Инициализирует главное окно приложения через DI. Выполняет роль composition root.
-     * Создаёт контроллер, меню, внутренние окна и связывает их с MainApplicationFrame.
-     * Метод вызывается внутри EDT через SwingUtilities.invokeLater.
-     */
+//сборщик зависимостей
+
     private static void initializeApp() {
+//        главный контроллер прилаги
         ApplicationController controller = new ApplicationController();
+//        Сервис сохранения состояния окон
         PreferencesWindowStateService stateService = new PreferencesWindowStateService();
 
         MenuManager menuManager = new MenuManager(controller);
         ApplicationMenuBar menuBar = new ApplicationMenuBar(menuManager);
+//        Менеджер внутренних окон в кот передаются созданные окна игры и логов
         InternalWindowManager windowManager = new InternalWindowManager(
                 List.of(
-                    createGameWindow(),
-                    createLogWindow()
+
+                        createGameWindow(),
+                        createLogWindow()
                 ),
                 stateService
         );
-
+//        Отображает главное окно на весь экран и восстанавливает тож
         MainApplicationFrame frame = new MainApplicationFrame(
                 menuBar,
                 windowManager,
@@ -64,28 +58,19 @@ public class RobotsProgram {
         frame.setVisible(true);
         frame.setExtendedState(Frame.MAXIMIZED_BOTH);
 
-        // возвращаем состояние окон с последней сессии.
         windowManager.restoreState();
     }
-
-    /**
-     * Устанавливает дефолтные настройки для внешнего вида окон приложения
-     */
+//    вспомогательный метод для настройки UI и локализации
     private static void setDefaultLookAndFeel() {
         try {
-            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
-            System.err.println("Couldn't set default look and feel");
+            Logger.error("Failed to set system look and feel: " + e.getMessage());
         }
     }
 
-    /**
-     * Настраивает локализацию для приложения
-     */
     private static void localizeApp() {
-
         Locale.setDefault(Locale.of("ru"));
-
         UIManager.put("OptionPane.yesButtonText", "Да");
         UIManager.put("OptionPane.noButtonText", "Нет");
         UIManager.put("OptionPane.okButtonText", "Oк");
@@ -110,31 +95,22 @@ public class RobotsProgram {
         UIManager.put("FileChooser.detailsViewButtonToolTipText", "Таблица");
     }
 
-    /**
-     * Создает и настраивает окно логов {@link LogWindow}
-     * @return новый экземпляр {@link LogWindow}
-     */
+//    создаёт окно логов, подписывает его на источник логов
     private static LogWindow createLogWindow() {
         LogWindow logWindow = new LogWindow(Logger.getDefaultLogSource());
-        logWindow.setName("logWindow");
-        // Значения по умолчанию
         logWindow.setLocation(10, 10);
         logWindow.setPreferredSize(new Dimension(300, 200));
         logWindow.pack();
-
         Logger.debug("Протокол работает");
-
         return logWindow;
     }
 
-    /**
-     * Создает и настраивает окно игры {@link GameWindow}
-     * @return новый экземпляр {@link GameWindow}
-     */
+//    создаёт модель робота,передаёт её в конструктор GameWindow,
+//    а затем настраивает имя и размер окна
     private static GameWindow createGameWindow() {
-        GameWindow gameWindow = new GameWindow();
+        RobotModel robotModel = new RobotModel();   // создаём модель
+        GameWindow gameWindow = new GameWindow(robotModel);
         gameWindow.setName("gameWindow");
-        // Значение по умолчанию
         gameWindow.setSize(400, 400);
         return gameWindow;
     }
